@@ -19,6 +19,8 @@ export default function App() {
   //Month and events 
    const [month, setMonth] = useState(new Date().getMonth());  
    const [events, setEvents] = useState([]);  
+   const [currentLatitude, setCurrentLatitude] = useState(0);
+   const [currentLongitude, setCurrentLongitude] = useState(0);
 
   //Hook The fires on onmount and gets data 
   useEffect(() => {
@@ -30,6 +32,19 @@ export default function App() {
         setEvents(assignIDs(parseObject));
       };
       fetchData();
+
+      // fetching current location found here
+      // https://medium.com/@princessjanf/react-native-maps-with-direction-from-current-location-ab1a371732c2
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(position);
+          setCurrentLatitude(position.coords.latitude)
+          setCurrentLongitude(position.coords.longitude)
+        },
+        (error) => this.setState({ error: error.message }),
+        { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 },
+      );
+
     },[]);
     
 
@@ -88,8 +103,23 @@ function assignIDs(events){
 
 
     return (
-      <View style={styles.container}>
-        <MapView style={styles.mapStyle} />
+      <View style={styles.map}>
+      <MapView 
+          style={styles.mapStyle} 
+          initialRegion={{
+            latitude:38.03257352085919, 
+            longitude:-78.49453241736464,
+            latitudeDelta:1, 
+            longitudeDelta:1,
+          }}
+      />
+
+      <MapView.Marker
+         coordinate={{"latitude":38.03257352085919,"longitude":-78.49453241736464}}
+         title={"Your Location"}
+       />
+        
+
       {/* <View style={{height: 40, width: "100%"}}/>
       <LinearGradient
           colors={['#FFFFFF', '#D3DAEB', '#FFFFFF']}>
@@ -163,5 +193,12 @@ const styles = StyleSheet.create({
   mapStyle: {
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
+  },
+  map: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
